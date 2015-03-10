@@ -1,0 +1,512 @@
+d
+for(i in 1:4)
+{d<-gsub(dic$term,dic$fullform,d)}
+for(i in 1:4)
+{d<-gsub(dic$term[i],dic$fullform[i],d)}
+d
+require(plyr)
+for(i in 1:4)
+{d<-gsub(dic$term[i],dic$fullform[i],d)}
+d
+a<-dic$term
+b<-dic$fullform
+for(i in 1:4)
+{d<-gsub(a[i],b[i],d)}
+d
+d<-"plz accept my proposal"
+for(i in 1:4)
+{d<-gsub(a[i],b[i],d)}
+d
+d<-"plz accept my proposal"
+d
+for(i in 1:4)
+{d<-gsub(a[i],b[i],d)}
+d
+for(i in 1:4)
+{d<-gsub(a[i],b[i],d)}
+d
+d<-"plz accept my proposal"
+for(i in 1:4)
+{d<-gsub(a[i],b[i],d)}
+d
+install.packages("ggplot2")
+require(plyr)
+require(stringr)
+#preprocessing of data
+data<-read.csv("tweets/suits.csv")
+reqtweets<-data$text
+replace<-function(statement)
+{statement<-gsub("@(.*?) +","||T|| ",statement)
+sentence<-gsub("(http://t.co/)[0-9a-zA-Z]*","||U|| ",statement)
+}
+lapply(reqtweets,replace)
+#to calculate percentage for each tweet
+sentiment.file <- "AFINN/AFINN-111.txt"
+df.sentiments <- read.table(sentiment.file,header=F,sep="\t",quote="",col.names=c("term","score"))
+df.sentiments$term <- gsub("[^[:alnum:]]", " ",df.sentiments$term)
+ScoreTerm <- function(term){
+df.sentiments[match(term,df.sentiments[,"term"]),"score"]
+}
+ScoreText <- function(text){
+text <- tolower(gsub("[^[:alnum:]]", " ",text))
+text <- do.call(c,strsplit(text," "))
+text <- text[text!=""]
+length(text)
+scores <- ScoreTerm(text)
+wordcount<-sum(!is.na(scores))
+if(wordcount==0)
+{
+percentage<-0
+}
+else
+{
+scores[is.na(scores)] <- 0
+numerator<-sum(scores)
+denominator<-wordcount*5
+percentage<-(numerator/denominator)*100
+}
+return(percentage)
+data<-cbind(data,percentage)
+}
+scorevector<-lapply(reqtweets,ScoreText)
+n1<-as.numeric(scorevector)
+hist(n1)
+pos_words=scan("positive-words.txt",what="character",comment.char=";")
+neg_words=scan("negative-words.txt",what="character",comment.char=";")
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+require(plyr)
+require(stringr)
+# we got a vector of sentences. plyr will handle a list
+# or a vector as an "l" for us
+# we want a simple array ("a") of scores back, so we use
+# "l" + "a" + "ply" = "laply":
+scores = laply(sentences, function(sentence, pos.words, neg.words) {
+# clean up sentences with R's regex-driven global substitute, gsub():
+sentence = gsub('[[:punct:]]', '', sentence)
+sentence = gsub('[[:cntrl:]]', '', sentence)
+sentence = gsub('\\d+', '', sentence)
+# and convert to lower case:
+sentence = tolower(sentence)
+# split into words. str_split is in the stringr package
+word.list = str_split(sentence, '\\s+')
+# sometimes a list() is one level of hierarchy too much
+words = unlist(word.list)
+# compare our words to the dictionaries of positive & negative terms
+pos.matches = match(words, pos.words)
+neg.matches = match(words, neg.words)
+# match() returns the position of the matched term or NA
+# we just want a TRUE/FALSE:
+pos.matches = !is.na(pos.matches)
+neg.matches = !is.na(neg.matches)
+# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+score = sum(pos.matches) - sum(neg.matches)
+return(score)
+}, pos.words, neg.words, .progress=.progress )
+scores.df = data.frame(score=scores, text=sentences)
+return(scores.df)
+}
+file<-read.csv("tweets/suits.csv")
+dove.score<-score.sentiment(file$text,pos_words,neg_words,.progress='text')
+barplot(dove.score$score)
+ggplot(dove.score$score)
+lines(dove.score$score)
+pos_words=scan("positive-words.txt",what="character",comment.char=";")
+neg_words=scan("negative-words.txt",what="character",comment.char=";")
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+require(plyr)
+require(stringr)
+# we got a vector of sentences. plyr will handle a list
+# or a vector as an "l" for us
+# we want a simple array ("a") of scores back, so we use
+# "l" + "a" + "ply" = "laply":
+scores = laply(sentences, function(sentence, pos.words, neg.words) {
+# clean up sentences with R's regex-driven global substitute, gsub():
+sentence = gsub('[[:punct:]]', '', sentence)
+sentence = gsub('[[:cntrl:]]', '', sentence)
+sentence = gsub('\\d+', '', sentence)
+# and convert to lower case:
+sentence = tolower(sentence)
+# split into words. str_split is in the stringr package
+word.list = str_split(sentence, '\\s+')
+# sometimes a list() is one level of hierarchy too much
+words = unlist(word.list)
+# compare our words to the dictionaries of positive & negative terms
+pos.matches = match(words, pos.words)
+neg.matches = match(words, neg.words)
+# match() returns the position of the matched term or NA
+# we just want a TRUE/FALSE:
+pos.matches = !is.na(pos.matches)
+neg.matches = !is.na(neg.matches)
+# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+score = sum(pos.matches) - sum(neg.matches)
+return(score)
+}, pos.words, neg.words, .progress=.progress )
+scores.df = data.frame(score=scores, text=sentences)
+return(scores.df)
+}
+file<-read.csv("tweets/suits.csv")
+dove.score<-score.sentiment(file$text,pos_words,neg_words,.progress='text')
+lines(dove.score$score)
+pos_words=scan("positive-words.txt",what="character",comment.char=";")
+neg_words=scan("negative-words.txt",what="character",comment.char=";")
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+require(plyr)
+require(stringr)
+# we got a vector of sentences. plyr will handle a list
+# or a vector as an "l" for us
+# we want a simple array ("a") of scores back, so we use
+# "l" + "a" + "ply" = "laply":
+scores = laply(sentences, function(sentence, pos.words, neg.words) {
+# clean up sentences with R's regex-driven global substitute, gsub():
+sentence = gsub('[[:punct:]]', '', sentence)
+sentence = gsub('[[:cntrl:]]', '', sentence)
+sentence = gsub('\\d+', '', sentence)
+# and convert to lower case:
+sentence = tolower(sentence)
+# split into words. str_split is in the stringr package
+word.list = str_split(sentence, '\\s+')
+# sometimes a list() is one level of hierarchy too much
+words = unlist(word.list)
+# compare our words to the dictionaries of positive & negative terms
+pos.matches = match(words, pos.words)
+neg.matches = match(words, neg.words)
+# match() returns the position of the matched term or NA
+# we just want a TRUE/FALSE:
+pos.matches = !is.na(pos.matches)
+neg.matches = !is.na(neg.matches)
+# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+score = sum(pos.matches) - sum(neg.matches)
+return(score)
+}, pos.words, neg.words, .progress=.progress )
+scores.df = data.frame(score=scores, text=sentences)
+return(scores.df)
+}
+file<-read.csv("tweets/suits.csv")
+dove.score<-score.sentiment(file$text,pos_words,neg_words,.progress='text')
+ggplot(dove.score$score)
+pos_words=scan("positive-words.txt",what="character",comment.char=";")
+neg_words=scan("negative-words.txt",what="character",comment.char=";")
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+require(plyr)
+require(stringr)
+# we got a vector of sentences. plyr will handle a list
+# or a vector as an "l" for us
+# we want a simple array ("a") of scores back, so we use
+# "l" + "a" + "ply" = "laply":
+scores = laply(sentences, function(sentence, pos.words, neg.words) {
+# clean up sentences with R's regex-driven global substitute, gsub():
+sentence = gsub('[[:punct:]]', '', sentence)
+sentence = gsub('[[:cntrl:]]', '', sentence)
+sentence = gsub('\\d+', '', sentence)
+# and convert to lower case:
+sentence = tolower(sentence)
+# split into words. str_split is in the stringr package
+word.list = str_split(sentence, '\\s+')
+# sometimes a list() is one level of hierarchy too much
+words = unlist(word.list)
+# compare our words to the dictionaries of positive & negative terms
+pos.matches = match(words, pos.words)
+neg.matches = match(words, neg.words)
+# match() returns the position of the matched term or NA
+# we just want a TRUE/FALSE:
+pos.matches = !is.na(pos.matches)
+neg.matches = !is.na(neg.matches)
+# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+score = sum(pos.matches) - sum(neg.matches)
+return(score)
+}, pos.words, neg.words, .progress=.progress )
+scores.df = data.frame(score=scores, text=sentences)
+return(scores.df)
+}
+file<-read.csv("tweets/suits.csv")
+dove.score<-score.sentiment(file$text,pos_words,neg_words,.progress='text')
+ggplot2(dove.score$score)
+require(ggplot2)
+pos_words=scan("positive-words.txt",what="character",comment.char=";")
+neg_words=scan("negative-words.txt",what="character",comment.char=";")
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+require(plyr)
+require(stringr)
+# we got a vector of sentences. plyr will handle a list
+# or a vector as an "l" for us
+# we want a simple array ("a") of scores back, so we use
+# "l" + "a" + "ply" = "laply":
+scores = laply(sentences, function(sentence, pos.words, neg.words) {
+# clean up sentences with R's regex-driven global substitute, gsub():
+sentence = gsub('[[:punct:]]', '', sentence)
+sentence = gsub('[[:cntrl:]]', '', sentence)
+sentence = gsub('\\d+', '', sentence)
+# and convert to lower case:
+sentence = tolower(sentence)
+# split into words. str_split is in the stringr package
+word.list = str_split(sentence, '\\s+')
+# sometimes a list() is one level of hierarchy too much
+words = unlist(word.list)
+# compare our words to the dictionaries of positive & negative terms
+pos.matches = match(words, pos.words)
+neg.matches = match(words, neg.words)
+# match() returns the position of the matched term or NA
+# we just want a TRUE/FALSE:
+pos.matches = !is.na(pos.matches)
+neg.matches = !is.na(neg.matches)
+# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+score = sum(pos.matches) - sum(neg.matches)
+return(score)
+}, pos.words, neg.words, .progress=.progress )
+scores.df = data.frame(score=scores, text=sentences)
+return(scores.df)
+}
+file<-read.csv("tweets/suits.csv")
+dove.score<-score.sentiment(file$text,pos_words,neg_words,.progress='text')
+ggplot2(dove.score$score)
+pos_words=scan("positive-words.txt",what="character",comment.char=";")
+neg_words=scan("negative-words.txt",what="character",comment.char=";")
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+require(plyr)
+require(stringr)
+# we got a vector of sentences. plyr will handle a list
+# or a vector as an "l" for us
+# we want a simple array ("a") of scores back, so we use
+# "l" + "a" + "ply" = "laply":
+scores = laply(sentences, function(sentence, pos.words, neg.words) {
+# clean up sentences with R's regex-driven global substitute, gsub():
+sentence = gsub('[[:punct:]]', '', sentence)
+sentence = gsub('[[:cntrl:]]', '', sentence)
+sentence = gsub('\\d+', '', sentence)
+# and convert to lower case:
+sentence = tolower(sentence)
+# split into words. str_split is in the stringr package
+word.list = str_split(sentence, '\\s+')
+# sometimes a list() is one level of hierarchy too much
+words = unlist(word.list)
+# compare our words to the dictionaries of positive & negative terms
+pos.matches = match(words, pos.words)
+neg.matches = match(words, neg.words)
+# match() returns the position of the matched term or NA
+# we just want a TRUE/FALSE:
+pos.matches = !is.na(pos.matches)
+neg.matches = !is.na(neg.matches)
+# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+score = sum(pos.matches) - sum(neg.matches)
+return(score)
+}, pos.words, neg.words, .progress=.progress )
+scores.df = data.frame(score=scores, text=sentences)
+return(scores.df)
+}
+file<-read.csv("tweets/suits.csv")
+dove.score<-score.sentiment(file$text,pos_words,neg_words,.progress='text')
+plot(dove.score$score)
+lines(dove.score$score)
+lines(dove.score$score,col='red')
+pos_words=scan("positive-words.txt",what="character",comment.char=";")
+neg_words=scan("negative-words.txt",what="character",comment.char=";")
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+require(plyr)
+require(stringr)
+# we got a vector of sentences. plyr will handle a list
+# or a vector as an "l" for us
+# we want a simple array ("a") of scores back, so we use
+# "l" + "a" + "ply" = "laply":
+scores = laply(sentences, function(sentence, pos.words, neg.words) {
+# clean up sentences with R's regex-driven global substitute, gsub():
+sentence = gsub('[[:punct:]]', '', sentence)
+sentence = gsub('[[:cntrl:]]', '', sentence)
+sentence = gsub('\\d+', '', sentence)
+# and convert to lower case:
+sentence = tolower(sentence)
+# split into words. str_split is in the stringr package
+word.list = str_split(sentence, '\\s+')
+# sometimes a list() is one level of hierarchy too much
+words = unlist(word.list)
+# compare our words to the dictionaries of positive & negative terms
+pos.matches = match(words, pos.words)
+neg.matches = match(words, neg.words)
+# match() returns the position of the matched term or NA
+# we just want a TRUE/FALSE:
+pos.matches = !is.na(pos.matches)
+neg.matches = !is.na(neg.matches)
+# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+score = sum(pos.matches) - sum(neg.matches)
+return(score)
+}, pos.words, neg.words, .progress=.progress )
+scores.df = data.frame(score=scores, text=sentences)
+return(scores.df)
+}
+file<-read.csv("tweets/suits.csv")
+dove.score<-score.sentiment(file$text,pos_words,neg_words,.progress='text')
+plot(dove.score$score)  scores = laply(sentences, function(sentence, pos.words, neg.words) {
+# clean up sentences with R's regex-driven global substitute, gsub():
+sentence = gsub('[[:punct:]]', '', sentence)
+sentence = gsub('[[:cntrl:]]', '', sentence)
+sentence = gsub('\\d+', '', sentence)
+# and convert to lower case:
+sentence = tolower(sentence)
+# split into words. str_split is in the stringr package
+word.list = str_split(sentence, '\\s+')
+# sometimes a list() is one level of hierarchy too much
+words = unlist(word.list)
+# compare our words to the dictionaries of positive & negative terms
+pos.matches = match(words, pos.words)
+neg.matches = match(words, neg.words)
+# match() returns the position of the matched term or NA
+# we just want a TRUE/FALSE:
+pos.matches = !is.na(pos.matches)
+neg.matches = !is.na(neg.matches)
+# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+score = sum(pos.matches) - sum(neg.matches)
+return(score)
+}, pos.words, neg.words, .progress=.progress )
+scores.df = data.frame(score=scores, text=sentences)
+return(scores.df)
+}
+file<-read.csv("tweets/suits.csv")
+dove.score<-score.sentiment(file$text,pos_words,neg_words,.progress='text')
+plot(dove.score$score)
+pos_words=scan("positive-words.txt",what="character",comment.char=";")
+neg_words=scan("negative-words.txt",what="character",comment.char=";")
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+require(plyr)
+require(stringr)
+# we got a vector of sentences. plyr will handle a list
+# or a vector as an "l" for us
+# we want a simple array ("a") of scores back, so we use
+# "l" + "a" + "ply" = "laply":
+scores = laply(sentences, function(sentence, pos.words, neg.words) {
+# clean up sentences with R's regex-driven global substitute, gsub():
+sentence = gsub('[[:punct:]]', '', sentence)
+sentence = gsub('[[:cntrl:]]', '', sentence)
+sentence = gsub('\\d+', '', sentence)
+# and convert to lower case:
+sentence = tolower(sentence)
+# split into words. str_split is in the stringr package
+word.list = str_split(sentence, '\\s+')
+# sometimes a list() is one level of hierarchy too much
+words = unlist(word.list)
+# compare our words to the dictionaries of positive & negative terms
+pos.matches = match(words, pos.words)
+neg.matches = match(words, neg.words)
+# match() returns the position of the matched term or NA
+# we just want a TRUE/FALSE:
+pos.matches = !is.na(pos.matches)
+neg.matches = !is.na(neg.matches)
+# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+score = sum(pos.matches) - sum(neg.matches)
+return(score)
+}, pos.words, neg.words, .progress=.progress )
+scores.df = data.frame(score=scores, text=sentences)
+return(scores.df)
+}
+file<-read.csv("tweets/suits.csv")
+dove.score<-score.sentiment(file$text,pos_words,neg_words,.progress='text')
+barplot(dove.score$score)
+require(twitteR)
+tweets <- searchTwitter(“#excel”,n=1500)
+tweets <- searchTwitter(“#excel”,n=1500)
+tweets <- searchTwitter(“#omg”,n=1500)
+install.packages('sqldf')
+require(twitteR)
+require(ROAuth)
+options(RCurlOptions=list(capath=system.file("CurlSSL", "cacert.pem", package="RCurl"), ssl.verifypeer=FALSE))
+reqURL <- "https://api.twitter.com/oauth/request_token"
+accessURL <- "https://api.twitter.com/oauth/access_token"
+authURL <- "https://api.twitter.com/oauth/authorize"
+consumerKey <- "xYN2cwqkWgm3LEH5HhykDg"
+consumerSecret <- "jTFqPy2pfzz2drCQ3hI5pD1k1BiCyG0mLUVZpV598"
+twitCred <- OAuthFactory$new(consumerKey=consumerKey,consumerSecret=consumerSecret,requestURL=reqURL,accessURL=accessURL,authURL=authURL)
+twitCred$handshake()
+if true, continue further.
+tweets <- searchTwitter("#friends", n=10)
+library(plyr)
+tweets.df=ldply(tweets, function(t) t$toDataFrame())
+setwd("D:\\8th sem project\\tweets")
+getwd()
+write.csv(tweets.df, file="friends.csv")
+require(twitteR)
+require(ROAuth)
+options(RCurlOptions=list(capath=system.file("CurlSSL", "cacert.pem", package="RCurl"), ssl.verifypeer=FALSE))
+reqURL <- "https://api.twitter.com/oauth/request_token"
+accessURL <- "https://api.twitter.com/oauth/access_token"
+authURL <- "https://api.twitter.com/oauth/authorize"
+consumerKey <- "xYN2cwqkWgm3LEH5HhykDg"
+consumerSecret <- "jTFqPy2pfzz2drCQ3hI5pD1k1BiCyG0mLUVZpV598"
+twitCred <- OAuthFactory$new(consumerKey=consumerKey,consumerSecret=consumerSecret,requestURL=reqURL,accessURL=accessURL,authURL=authURL)
+twitCred$handshake()
+registerTwitterOAuth(twitCred)
+tweets <- searchTwitter("#friends", n=10)
+library(plyr)
+tweets.df=ldply(tweets, function(t) t$toDataFrame())
+setwd("D:\\8th sem project\\tweets")
+getwd()
+write.csv(tweets.df, file="friends.csv")
+require(twitteR)
+require(ROAuth)
+options(RCurlOptions=list(capath=system.file("CurlSSL", "cacert.pem", package="RCurl"), ssl.verifypeer=FALSE))
+reqURL <- "https://api.twitter.com/oauth/request_token"
+accessURL <- "https://api.twitter.com/oauth/access_token"
+authURL <- "https://api.twitter.com/oauth/authorize"
+consumerKey <- "xYN2cwqkWgm3LEH5HhykDg"
+consumerSecret <- "jTFqPy2pfzz2drCQ3hI5pD1k1BiCyG0mLUVZpV598"
+twitCred <- OAuthFactory$new(consumerKey=consumerKey,consumerSecret=consumerSecret,requestURL=reqURL,accessURL=accessURL,authURL=authURL)
+twitCred$handshake()
+registerTwitterOAuth(twitCred)
+tweets <- searchTwitter("#puranijeans", n=10)
+library(plyr)
+tweets.df=ldply(tweets, function(t) t$toDataFrame())
+setwd("D:\\8th sem project\\tweets")
+getwd()
+write.csv(tweets.df, file="puranijeans.csv")
+tweets <- searchTwitter("#puranijeans", n=100)
+library(plyr)
+tweets.df=ldply(tweets, function(t) t$toDataFrame())
+setwd("D:\\8th sem project\\tweets")
+getwd()
+write.csv(tweets.df, file="puranijeans1.csv")
+require(twitteR)
+require(ROAuth)
+options(RCurlOptions=list(capath=system.file("CurlSSL", "cacert.pem", package="RCurl"), ssl.verifypeer=FALSE))
+reqURL <- "https://api.twitter.com/oauth/request_token"
+accessURL <- "https://api.twitter.com/oauth/access_token"
+authURL <- "https://api.twitter.com/oauth/authorize"
+consumerKey <- "xYN2cwqkWgm3LEH5HhykDg"
+consumerSecret <- "jTFqPy2pfzz2drCQ3hI5pD1k1BiCyG0mLUVZpV598"
+twitCred <- OAuthFactory$new(consumerKey=consumerKey,consumerSecret=consumerSecret,requestURL=reqURL,accessURL=accessURL,authURL=authURL)
+twitCred$handshake()
+registerTwitterOAuth(twitCred)
+tweets <- searchTwitter("#baghban", n=1000)
+library(plyr)
+tweets.df=ldply(tweets, function(t) t$toDataFrame())
+setwd("D:\\8th sem project\\tweets")
+getwd()
+write.csv(tweets.df, file="baghban.csv")
+tweets <- searchTwitter("#cricket", n=10)
+library(plyr)
+tweets.df=ldply(tweets, function(t) t$toDataFrame())
+setwd("D:\\8th sem project\\tweets")
+getwd()
+write.csv(tweets.df, file="cricket.csv")
+tweets <- searchTwitter("#cricket", n=1000)
+library(plyr)
+tweets.df=ldply(tweets, function(t) t$toDataFrame())
+setwd("D:\\8th sem project\\tweets")
+getwd()
+write.csv(tweets.df, file="cricket.csv")
+tweets <- searchTwitter("#cricket", n=500)
+library(plyr)
+tweets.df=ldply(tweets, function(t) t$toDataFrame())
+setwd("D:\\8th sem project\\tweets")
+getwd()
+write.csv(tweets.df, file="cricket.csv")
+tweets <- searchTwitter("#football", n=100)
+library(plyr)
+tweets.df=ldply(tweets, function(t) t$toDataFrame())
+setwd("D:\\8th sem project\\tweets")
+getwd()
+write.csv(tweets.df, file="football.csv")

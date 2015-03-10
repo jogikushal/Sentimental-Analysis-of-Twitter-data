@@ -1,0 +1,45 @@
+#preprocessing of data
+data<-read.csv("tweets/doves.csv")
+reqtweets<-data$text
+replace<-function(statement)
+{statement<-gsub("@(.*?) +","||T|| ",statement)
+statement<-gsub("(http://t.co/)[0-9a-zA-Z]*","||U|| ",statement)
+statement<-gsub("(RT|via)((?:\\b\\W*@\\w+)+)","",statement)
+statement<-gsub("[[:punct:]]","",statement)
+statement<-gsub("[[:digit:]]","",statement)
+statement<-gsub("[ \t]{2,}"," ",statement)
+statement<-gsub("^\\s+|\\s+$"," ",statement)
+}
+lapply(reqtweets,replace)
+#to calculate percentage for each tweet
+sentiment.file <- "AFINN/AFINN-111.txt"
+ df.sentiments <- read.table(sentiment.file,header=F,sep="\t",quote="",col.names=c("term","score"))
+ df.sentiments$term <- gsub("[^[:alnum:]]", " ",df.sentiments$term)
+ ScoreTerm <- function(term){
+     df.sentiments[match(term,df.sentiments[,"term"]),"score"]
+ }
+ ScoreText <- function(text){
+     text <- tolower(gsub("[^[:alnum:]]", " ",text))
+     
+     text <- do.call(c,strsplit(text," "))
+     text <- text[text!=""]
+     length(text)
+     scores <- ScoreTerm(text)
+	 wordcount<-sum(!is.na(scores))
+	if(wordcount==0)
+	 {
+	 percentage<-0
+	 }
+	 else
+	{
+	scores[is.na(scores)] <- 0
+	numerator<-sum(scores)
+	 denominator<-wordcount*5
+     percentage<-(numerator/denominator)*100
+	}
+	return(percentage)
+	data<-cbind(data,percentage)
+	 }
+scorevector<-lapply(reqtweets,ScoreText)
+number_of_tweets<-as.numeric(scorevector)
+hist(number_of_tweets)

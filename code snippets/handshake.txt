@@ -1,0 +1,18 @@
+require(twitteR)
+require(ROAuth)
+options(RCurlOptions=list(capath=system.file("CurlSSL", "cacert.pem", package="RCurl"), ssl.verifypeer=FALSE))
+ reqURL <- "https://api.twitter.com/oauth/request_token"
+ accessURL <- "https://api.twitter.com/oauth/access_token"
+ authURL <- "https://api.twitter.com/oauth/authorize"
+ consumerKey <- "xYN2cwqkWgm3LEH5HhykDg"
+ consumerSecret <- "jTFqPy2pfzz2drCQ3hI5pD1k1BiCyG0mLUVZpV598"
+ twitCred <- OAuthFactory$new(consumerKey=consumerKey,consumerSecret=consumerSecret,requestURL=reqURL,accessURL=accessURL,authURL=authURL)
+ twitCred$handshake()
+ registerTwitterOAuth(twitCred)
+if true, continue further.
+tweets <- searchTwitter("#vodafone", n=100)
+ library(plyr)
+ tweets.df=ldply(tweets, function(t) t$toDataFrame())
+ setwd("D:\\8th sem project\\tweets")
+ getwd()
+ write.csv(tweets.df, file="vodafone.csv")

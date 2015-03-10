@@ -1,0 +1,59 @@
+#preprocessing of data
+data<-read.csv("tweets/doves.csv")
+reqtweets<-data$text
+replace<-function(statement)
+{statement<-gsub("@(.*?) +","||T|| ",statement)
+statement<-gsub("(http://t.co/)[0-9a-zA-Z]*","||U|| ",statement)
+file<-read.csv("acr.csv")
+limit<-nrow(file)
+for(i in 1:limit)
+{statement<-gsub(file[i,1],file[i,2],statement)}
+}
+lapply(reqtweets,replace)
+pos_words=scan("positive-words.txt",what="character",comment.char=";")
+neg_words=scan("negative-words.txt",what="character",comment.char=";")
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+	require(plyr)
+	require(stringr)
+	
+	# we got a vector of sentences. plyr will handle a list
+	# or a vector as an "l" for us
+	# we want a simple array ("a") of scores back, so we use 
+	# "l" + "a" + "ply" = "laply":
+	scores = laply(sentences, function(sentence, pos.words, neg.words) {
+		
+		# clean up sentences with R's regex-driven global substitute, gsub():
+		sentence = gsub('[[:punct:]]', '', sentence)
+		sentence = gsub('[[:cntrl:]]', '', sentence)
+		sentence = gsub('\\d+', '', sentence)
+		# and convert to lower case:
+		sentence = tolower(sentence)
+
+		# split into words. str_split is in the stringr package
+		word.list = str_split(sentence, '\\s+')
+		# sometimes a list() is one level of hierarchy too much
+		words = unlist(word.list)
+
+		# compare our words to the dictionaries of positive & negative terms
+		pos.matches = match(words, pos.words)
+		neg.matches = match(words, neg.words)
+	
+		# match() returns the position of the matched term or NA
+		# we just want a TRUE/FALSE:
+		pos.matches = !is.na(pos.matches)
+		neg.matches = !is.na(neg.matches)
+
+		# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+		score = sum(pos.matches) - sum(neg.matches)
+
+		return(score)
+	}, pos.words, neg.words, .progress=.progress )
+
+	scores.df = data.frame(score=scores, text=sentences)
+	return(scores.df)
+}
+file<-read.csv("tweets/suits.csv")
+ dove.score<-score.sentiment(file$text,pos_words,neg_words,.progress='text')
+difference_between_pos_and_neg<-dove.score$score 
+barplot(difference_between_pos_and_neg)
